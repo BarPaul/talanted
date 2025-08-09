@@ -1,40 +1,62 @@
-name: Docker Compose CI
+name: Docker Compose CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Set up Docker Compose
       run: |
-        # Проверка доступности docker-compose
-        docker-compose --version
-        
-        # Создаем .env файл с переменными окружения
-        echo "API_PORT=8000" >> .env
-        echo "FRONT_PORT=3000" >> .env
-        
-    - name: Build and run services
+        mkdir -p ~/.docker/cli-plugins/
+        curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+        chmod +x ~/.docker/cli-plugins/docker-compose
+        docker compose version
+
+    - name: Create .env file
       run: |
-        # Собираем и запускаем сервисы в фоне
-        docker-compose up -d --build
-        
-        # Ждем инициализации базы данных
-        sleep 10
-        
-        # Проверяем состояние сервисов
-        docker-compose ps
-        
-        # Проверяем логи backend
-        docker-compose logs backend
-        
-        # Проверяем доступность приложения
-        docker-compose exec backend curl -I http://localhost:8000
+        echo "API_PORT=8000" > .env
+        echo "FRONT_PORT=3000" >> .env
+        cat .env
+
+    - name: Build services
+      run: docker compose build
+
+    - name: Start database
+      run: docker compose up -d db
+
+    - name: Wait for PostgreSQL
+      run: |
+        docker compose exec db bash -c \
+          "until pg_isready -U root -d database; do sleep 2; done"
+
+    - name: Run backend initialization
+      run: docker compose run --rm backend python init_db.py
+
+    - name: Start backend
+      run: docker compose up -d backend
+
+    - name: Test backend health
+      run: |
+        docker compose run --rm curlimages/curl \
+          curl -I http://backend:8000 --retry 3 --retry-delay 5
+
+    # - name: Start frontend
+    #   run: docker compose up -d frontend
+    #
+    # - name: Test frontend health
+    #   run: |
+    #     docker compose run --rm curlimages/curl \
+    #       curl -I http://frontend:3000 --retry 3 --retry-delay 5
+
+    #- name: Clean up
+    #  if: always()
+    #  run: docker compose down -v --remove-orphans
