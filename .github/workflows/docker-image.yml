@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Compose CI
 
 on:
   push:
@@ -7,12 +7,34 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    
+    - name: Set up Docker Compose
+      run: |
+        # Проверка доступности docker-compose
+        docker-compose --version
+        
+        # Создаем .env файл с переменными окружения
+        echo "API_PORT=8000" >> .env
+        echo "FRONT_PORT=3000" >> .env
+        
+    - name: Build and run services
+      run: |
+        # Собираем и запускаем сервисы в фоне
+        docker-compose up -d --build
+        
+        # Ждем инициализации базы данных
+        sleep 10
+        
+        # Проверяем состояние сервисов
+        docker-compose ps
+        
+        # Проверяем логи backend
+        docker-compose logs backend
+        
+        # Проверяем доступность приложения
+        docker-compose exec backend curl -I http://localhost:8000
