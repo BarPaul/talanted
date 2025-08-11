@@ -1,5 +1,5 @@
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, grade, teacher, child
+from routers import auth, grade, teacher, child, achievement
 from fastapi.security import OAuth2PasswordBearer
 from middlewares import AuthMiddleware
 from fastapi import FastAPI
@@ -43,5 +43,5 @@ async def get_openapi_schema():
                 method["security"] = [{"BearerAuth": []}]
     return schema
 
-for module in (auth, grade, teacher, child):
+for module in (auth, grade, teacher, child, achievement):
     app.include_router(module.router)

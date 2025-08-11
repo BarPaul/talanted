@@ -1,15 +1,48 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timedelta
 from sqlalchemy import select, delete
-from sqlalchemy.orm import selectinload
-from models import User, UserRole, UserCity, Child, Grade, Teacher
-from schemas import UserResponse, GradeResponse, ChildResponse, TeacherResponse
+from sqlalchemy.orm import selectinload, strategy_options
+from models import User, UserRole, UserCity, Child, Grade, Teacher, Achievement, \
+    AchieveFormat, AchievePlace, AchieveTeam, AchieveLevel, AchieveType
+from schemas import UserResponse, GradeResponse, ChildResponse, TeacherResponse, AchievementResponse
+from datetime import datetime
+from config import ALLOWED_EXTENSIONS
+from uuid import uuid4
+from fastapi import UploadFile
+from os import path, makedirs, remove
+import exceptions
+
+def validate_date(date_str: str):
+    print(date_str)
+    try:
+        date = datetime.strptime(date_str, "%d.%m.%Y").date()
+    except ValueError:
+        return False, exceptions.WRONG_DATEFORMAT
+    now = datetime.today().date()
+    if date > now:
+        return False, exceptions.IN_FUTURE
+    if date <= now - timedelta(days=3 * 365):
+        return False, exceptions.TOO_OLDDATE
+    return True, date
+
+async def save_achievement_file(file: UploadFile) -> str:
+    ext = path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise exceptions.WRONG_EXTENSION
+    unique_filename = f"{uuid4()}{ext}"
+    save_path = path.join("achievements", unique_filename)
+    makedirs(path.dirname(save_path), exist_ok=True)
+    content = await file.read()
+    with open(save_path, "wb") as buffer:
+        buffer.write(content)
+    return save_path
 
 async def get_obj_by(db: AsyncSession, Class, Response=None, need_all=False, load_relationships: list = None, **kwargs):
     kwargs = dict(filter(lambda item: item[-1] is not None, kwargs.items()))
     query = select(Class).filter_by(**kwargs)
     if load_relationships:
         for relation in load_relationships:
-            query = query.options(selectinload(relation))
+            query = query.options(relation if isinstance(relation, strategy_options._AbstractLoad) else selectinload(relation))
     result = await db.execute(query)
     if need_all:
         orm_objs = result.scalars().all()
@@ -125,3 +158,42 @@ async def delete_teacher(db: AsyncSession, teacher: Teacher):
     stmt = delete(Teacher).where(Teacher.id == teacher.id)
     await db.execute(stmt)
     await db.commit()
+
+# ACHIEVEMENT
+async def create_achievement(db: AsyncSession, achievement: Achievement):
+    db.add(achievement)
+    await db.commit()
+    await db.refresh(achievement)
+    return achievement
+
+async def update_achievement(db: AsyncSession, 
+    achievement: Achievement, 
+    name: str,
+    type: AchieveType,
+    level: AchieveLevel,
+    format: AchieveFormat,
+    team: AchieveTeam,
+    place: AchievePlace,
+    date: datetime.date,
+    file: UploadFile, 
+):
+    achievement.name = name
+    achievement.type = type
+    achievement.level = level
+    achievement.format = format
+    achievement.team = team
+    achievement.place = place
+    achievement.date = date
+    if path.exists(achievement.file_path):
+        remove(achievement.file_path)
+    achievement.file_path = await save_achievement_file(file)
+    db.add(achievement)
+    await db.commit()
+    await db.refresh(achievement)
+    return AchievementResponse.model_validate(achievement)
+
+async def delete_achievement(db: AsyncSession, achievement: Achievement):
+    stmt = delete(Achievement).where(Achievement.id == achievement.id)
+    await db.execute(stmt)
+    await db.commit()
+

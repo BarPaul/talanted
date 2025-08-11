@@ -1,7 +1,8 @@
-from fastapi import Query
+from fastapi import Query, Form
 from pydantic import BaseModel, EmailStr, Field
-from models import UserRole, UserCity
-from typing import Annotated
+from models import UserRole, UserCity, AchieveFormat, AchievePlace, AchieveTeam, AchieveType, AchieveLevel
+from typing import Annotated, Optional
+import datetime
 
 # AUTH
 
@@ -129,4 +130,33 @@ class TeacherChange(BaseModel):
 class TeacherDelete(BaseModel):
     id: int
 
-# GradeResponse.update_forward_refs()
+class AchievementResponse(BaseModel):
+    id: int
+    name: str = Form(...)
+    type: AchieveType = Form(...)
+    level: AchieveLevel = Form(...)
+    format: AchieveFormat = Form(...)
+    team: AchieveTeam = Form(...)
+    place: AchievePlace = Form(...)
+    child_id: int = Form(...)
+    teacher_id: int = Form(...)
+    date: datetime.date = Form(...)
+    ratio: float
+    file_path: str
+
+    class Config:
+        from_attributes = True
+
+class AchievementChange(BaseModel):
+    name: Optional[str] = Form(None),
+    type: Optional[AchieveType] = Form(None),
+    level: Optional[AchieveLevel] = Form(None),
+    format: Optional[AchieveFormat] = Form(None),
+    team: Optional[AchieveTeam] = Form(None),
+    place: Optional[AchievePlace] = Form(None),
+    child_id: Optional[int] = Form(None),
+    teacher_id: Optional[int] = Form(None),
+    date: Optional[datetime.date] = Form(None),
+
+class AchievementDelete(BaseModel):
+    id: int

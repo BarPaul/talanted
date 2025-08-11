@@ -54,3 +54,28 @@ CHILD_NOT_EXISTS = HTTPException(
     status_code=404,
     detail="Ученик не найден!"
 )
+
+ACHIEVEMENT_NOT_EXISTS = HTTPException(
+    status_code=404,
+    detail="Достижение не найдено!"
+)
+
+WRONG_EXTENSION =  HTTPException(
+    status_code=400, 
+    detail="Недопустимый формат файла! Разрешены: *.pdf, *.jpg, *.jpeg, *.png"
+)
+
+IN_FUTURE = HTTPException(
+    status_code=400, 
+    detail="Дата достижения не может быть в будущем!"
+)
+
+WRONG_DATEFORMAT = HTTPException(
+    status_code=400,
+    detail="Неверный формат даты! Используйте ДД.ММ.ГГГГ"
+)
+
+TOO_OLDDATE = HTTPException(
+    status_code=400,
+    detail="Достижение слишком старое! Не более 3-х лет с получения"
+)

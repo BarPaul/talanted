@@ -14,3 +14,5 @@ DB_URL = f"postgresql+asyncpg://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/
 
 WEB_HOST = getenv("WEB_HOST", "0.0.0.0")
 API_PORT = getenv("API_PORT", 8000)
+
+ALLOWED_EXTENSIONS = {'.pdf', '.jpg', '.jpeg', '.png'}
