@@ -36,6 +36,7 @@ class UserResponse(BaseModel):
     role: UserRole
     city: UserCity
     is_active: bool
+    
 
     class Config:
         from_attributes = True
@@ -64,6 +65,7 @@ class GradeResponse(GradeBase):
     school_id: int
     children: list["ChildResponse"] = Field(default=[])
     
+
     class Config:
         from_attributes = True
 
@@ -89,6 +91,7 @@ class ChildCreate(ChildBase):
 
 class ChildResponse(ChildBase):
     id: int
+    
     
     class Config:
         from_attributes = True
@@ -116,6 +119,7 @@ class TeacherResponse(TeacherBase):
     id: int
     school_id: int
     
+
     class Config:
         from_attributes = True
 
@@ -141,7 +145,7 @@ class AchievementResponse(BaseModel):
     child_id: int = Form(...)
     teacher_id: int = Form(...)
     date: datetime.date = Form(...)
-    ratio: float
+    ratio: Optional[float] = Field(0.0)
     file_path: str
 
     class Config:
@@ -160,3 +164,15 @@ class AchievementChange(BaseModel):
 
 class AchievementDelete(BaseModel):
     id: int
+
+class MunicipalityRatingItem(BaseModel):
+    city: UserCity
+    total_ratio: float
+    place: int
+
+class SchoolRatingItem(BaseModel):
+    school_id: int
+    name: str
+    city: UserCity
+    total_ratio: float
+    place: int

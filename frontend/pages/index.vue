@@ -1,76 +1,114 @@
+<!-- pages/index.vue -->
 <template>
-  <div>
-    <h1>Список предметов</h1>
-
-    <ul>
-      <li v-for="item in items" :key="item.id">
-        <b>{{ item.name }}</b><br>
-        Цена: {{ item.price }}<br>
-        Есть? {{ item.is_stock }}
-      </li>
-    </ul>
-
-    <button @click="showForm = true">Добавить предмет</button>
-
-    <div v-if="showForm" style="margin-top: 1em;">
-      <input v-model="newItemName" placeholder="Название предмета" />
-      <input type="number" step="0.01" min="0.01" v-model="newItemPrice" placeholder="Цена предмета" />
-      <button @click="addItem" :disabled="!newItemName.trim()">Добавить</button>
-      <button @click="cancel">Отмена</button>
+  <Header></Header>
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Достижения</h1>
     </div>
-
-    <p v-if="error" style="color: red;">{{ error }}</p>
+    <Filters @apply="loadAchievements" />
+    
+    <div v-if="loading" class="flex justify-center py-8">
+      <div class="loader border-t-2 border-blue-500 rounded-full w-8 h-8 animate-spin"></div>
+    </div>
+    
+    <div v-if="error" class="text-red-500 text-center py-4">
+      {{ error }}
+    </div>
+    
+    <div v-if="!loading && !error && achievements.length === 0" class="text-center py-4">
+      Достижения не найдены
+    </div>
+    
+    <div v-if="!loading && !error && achievements.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <AchievementCard v-for="a in achievements" :key="a.id" :achievement="a" />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
+import { useRuntimeConfig } from '#app';
 
-const config = useRuntimeConfig()
+useHead({ title: 'Достижения' });
 
-const items = ref([])
-const error = ref('')
-const showForm = ref(false)
-const newItemName = ref('')
-const newItemPrice = ref('')
+const achievements = ref([]);
+const filters = ref({});
+const loading = ref(false);
+const error = ref(null);
+const apiUrl = useRuntimeConfig().public.apiUrl;
 
-async function loadItems() {
-  error.value = ''
-  try {
-    const res = await $fetch(`${config.public.apiUrl}/items`)
-    items.value = res
-  } catch (e) {
-    error.value = 'Ошибка запроса списка '
-    console.error(e)
+const buildUrl = (baseUrl, path) => {
+  if (!baseUrl) {
+    throw new Error('API URL не настроен. Проверьте NUXT_PUBLIC_API_URL в .env файле');
   }
-}
+  
+  const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${cleanBaseUrl}${cleanPath}`;
+};
 
-async function addItem() {
-  if (!newItemName.value.trim()) return
-
-  error.value = ''
+const loadAchievements = async (newFilters) => {
+  loading.value = true;
+  error.value = null;
+  filters.value = newFilters;
+  
   try {
-    await $fetch(`${config.public.apiUrl}/items`, {
-      method: 'POST',
-        body: {
-            name: newItemName.value.trim(),
-            price: newItemPrice.value,
-            is_stock: true
-        },
-    })
-    newItemName.value = ''
-    showForm.value = false
-    await loadItems()
-  } catch (e) {
-    error.value = 'Ошибка при добавлении предмета'
-    console.error(e)
+    const apiUrl = useRuntimeConfig().public.apiUrl;
+    
+    if (!apiUrl) {
+      throw new Error('API URL не настроен. Проверьте NUXT_PUBLIC_API_URL в .env файле');
+    }
+    
+    // Создаем объект параметров, включая ТОЛЬКО непустые значения
+    const params = {};
+    
+    // Добавляем только непустые и определенные фильтры
+    if (filters.value.child_id !== null && filters.value.child_id !== undefined && filters.value.child_id !== '') {
+      params.child_id = filters.value.child_id;
+    }
+    
+    if (filters.value.city && filters.value.city !== 'all') {
+      params.city = filters.value.city;
+    }
+    
+    if (filters.value.name && filters.value.name.trim() !== '') {
+      params.name = filters.value.name;
+    }
+    
+    if (filters.value.achieve_type && filters.value.achieve_type !== 'all') {
+      params.achieve_type = filters.value.achieve_type;
+    }
+    
+    // Используем правильный путь к API
+    const url = `${apiUrl}achievement/all`;
+    
+    const data = await $fetch(url, { 
+      params,
+      onResponseError: ({ response }) => {
+        error.value = `Ошибка ${response.status}: ${response.statusText}`;
+      }
+    });
+    
+    if (!Array.isArray(data)) {
+      throw new Error('Получены некорректные данные от сервера');
+    }
+    
+    achievements.value = data;
+  } catch (err) {
+    error.value = `Не удалось загрузить достижения: ${err.message}`;
+    console.error('Ошибка при загрузке достижений:', err);
+  } finally {
+    loading.value = false;
   }
-}
+};
 
-function cancel() {
-  newItemName.value = ''
-  showForm.value = false
-}
-
-onMounted(loadItems)
+onMounted(() => {
+  loadAchievements({});
+});
 </script>
+
+<style scoped>
+.loader {
+  border-top-color: theme('colors.primary.500');
+}
+</style>

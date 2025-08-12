@@ -72,6 +72,12 @@ class User(Base):
     grades: Mapped[list["Grade"]] = relationship(back_populates="school")
     teachers: Mapped[list["Teacher"]] = relationship(back_populates="school")
 
+    @property
+    def ratio(self) -> float:
+        if self.role.level != 1:
+            return -1
+        return sum(grade.ratio for grade in self.grades)
+
     def __repr__(self):
         return f"User(id={self.id}, email={self.email}, name={self.name}, city={self.city}, role={self.role}, is_active={self.is_active})"
 
@@ -91,6 +97,10 @@ class Grade(Base):
         CheckConstraint("parallel BETWEEN 'А' AND 'Я'", name='check_parallel_letter'),
     )
 
+    @property
+    def ratio(self) -> float:
+        return sum(child.ratio for child in self.children)
+
     def __repr__(self):
         return f"Grade(id={self.id}, grade={self.grade}, parralel={self.parallel}, school_id={self.school_id})"
 
@@ -104,6 +114,10 @@ class Child(Base):
     grade: Mapped[Grade] = relationship(back_populates="children")
     achievements: Mapped[list["Achievement"]] = relationship(back_populates="child")
 
+    @property
+    def ratio(self) -> float:
+        return sum(achievement.ratio for achievement in self.achievements)
+
     def __repr__(self):
         return f"Child(id={self.id}, name={self.name}, grade_id={self.grade_id})"
 
@@ -116,6 +130,10 @@ class Teacher(Base):
 
     school: Mapped["User"] = relationship(back_populates="teachers")
     achievements: Mapped[list["Achievement"]] = relationship(back_populates="teacher")
+
+    @property
+    def ratio(self) -> float:
+        return sum(achievement.ratio for achievement in self.achievements)
 
     def __repr__(self):
         return f"Teacher(id={self.id}, name={self.name}, school_id={self.school_id})"

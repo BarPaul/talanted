@@ -79,3 +79,13 @@ TOO_OLDDATE = HTTPException(
     status_code=400,
     detail="Достижение слишком старое! Не более 3-х лет с получения"
 )
+
+WRONG_TYPE = HTTPException(
+    status_code=400,
+    detail="Недопустимое значение направления! Допустимые значения: Наука, Искусство, Спорт"
+)
+
+WRONG_CITY = HTTPException(
+    status_code=400,
+    detail="Недопустимое значение города! Проверьте список доступных городов."
+)

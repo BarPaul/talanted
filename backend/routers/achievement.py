@@ -1,33 +1,75 @@
-from models import User, Child, Grade, Teacher, Achievement, \
+from models import User, UserCity, Child, Grade, Teacher, Achievement, \
     AchieveFormat, AchievePlace, AchieveLevel, AchieveTeam, AchieveType
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from fastapi import APIRouter, Depends, Form, File, UploadFile
+from sqlalchemy import select
+from fastapi import APIRouter, Depends, Form, File, UploadFile, Query
 from os import path, remove
 from database import get_db
 from .auth import get_user
-from typing import List
+from typing import List, Optional
 import exceptions
 import schemas
 import crud
 
 router = APIRouter(prefix="/achievement", tags=["achievement"])
 
-@router.get("/all/{child_id}", response_model=List[schemas.AchievementResponse])
+@router.get("/all", response_model=List[schemas.AchievementResponse])
 async def all_achievements(
+    db: AsyncSession = Depends(get_db),
+    city: Optional[str] = Query(None, description="Фильтр по муниципалитету (городу)"),
+    achieve_type: Optional[str] = Query(None, description="Фильтр по направлению (Наука, Искусство, Спорт)"),
+    child_id: Optional[int] = Query(None, description="Фильтр по ID ребенка"),
+    name: Optional[str] = Query(None, description="Фильтр по названию достижения")
+):
+    # Создаем базовый запрос с необходимыми связями
+    query = select(Achievement).options(
+        selectinload(Achievement.child),
+        selectinload(Achievement.teacher)
+    )
+    
+    # Сначала обрабатываем фильтры, относящиеся к модели Achievement
+    if achieve_type:
+        try:
+            # Конвертируем строку в enum AchieveType
+            achieve_type_enum = AchieveType(achieve_type)
+            query = query.filter(Achievement.type == achieve_type_enum)
+        except ValueError:
+            raise exceptions.WRONG_TYPE
+    
+    if child_id:
+        query = query.filter(Achievement.child_id == child_id)
+    
+    if name:
+        # Используем ILIKE для регистронезависимого поиска
+        query = query.filter(Achievement.name.ilike(f"%{name}%"))
+    
+    # Теперь обрабатываем фильтр по городу
+    if city:
+        try:
+            # Проверяем, что город существует в перечислении
+            city_enum = UserCity(city)
+            # Присоединяем таблицы и фильтруем по городу
+            query = query.join(Achievement.child).join(Child.grade).join(Grade.school).filter(User.city == city_enum)
+        except ValueError:
+            raise exceptions.WRONG_CITY
+    
+    # Выполняем запрос
+    result = await db.execute(query)
+    achievements = result.scalars().all()
+    
+    return achievements
+
+@router.get("/all/{child_id}", response_model=List[schemas.AchievementResponse])
+async def all_child_achievements(
     child_id: int,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_user)
 ):
     child = await crud.get_obj_by(db, Child, id=child_id, 
         load_relationships=[Child.grade, selectinload(Child.grade).selectinload(Grade.school)]
     )
     if not child:
         raise exceptions.CHILD_NOT_EXISTS
-    if user.role.level <= 1 and child.grade.school.id != user.id:
-        raise exceptions.NOT_ALLOWED
-    elif user.role.level == 2 and child.grade.school.city != user.city:
-        raise exceptions.NOT_ALLOWED    
     achievements = await crud.get_obj_by(
         db, Achievement, need_all=True,
         child_id=child_id,
@@ -39,7 +81,6 @@ async def all_achievements(
 async def get_achievement(
     achievement_id: int,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_user)
 ):
     achievement = await crud.get_obj_by(
         db, Achievement,
@@ -53,10 +94,6 @@ async def get_achievement(
     )
     if not achievement:
         raise exceptions.ACHIEVEMENT_NOT_EXISTS
-    if user.role.level <= 1 and achievement.child.grade.school.id != user.id:
-            raise exceptions.NOT_ALLOWED
-    elif user.role.level == 2 and achievement.child.grade.school.city != user.city:
-            raise exceptions.NOT_ALLOWED
     return schemas.AchievementResponse.model_validate(achievement)
 
 @router.post("/create", response_model=schemas.AchievementResponse)
