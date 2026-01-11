@@ -22,42 +22,34 @@ async def all_achievements(
     child_id: Optional[int] = Query(None, description="Фильтр по ID ребенка"),
     name: Optional[str] = Query(None, description="Фильтр по названию достижения")
 ):
-    # Создаем базовый запрос с необходимыми связями
     query = select(Achievement).options(
         selectinload(Achievement.child),
         selectinload(Achievement.teacher)
     )
-    
-    # Сначала обрабатываем фильтры, относящиеся к модели Achievement
+
     if achieve_type:
         try:
-            # Конвертируем строку в enum AchieveType
             achieve_type_enum = AchieveType(achieve_type)
             query = query.filter(Achievement.type == achieve_type_enum)
         except ValueError:
             raise exceptions.WRONG_TYPE
-    
+
     if child_id:
         query = query.filter(Achievement.child_id == child_id)
-    
+
     if name:
-        # Используем ILIKE для регистронезависимого поиска
         query = query.filter(Achievement.name.ilike(f"%{name}%"))
-    
-    # Теперь обрабатываем фильтр по городу
+
     if city:
         try:
-            # Проверяем, что город существует в перечислении
             city_enum = UserCity(city)
-            # Присоединяем таблицы и фильтруем по городу
             query = query.join(Achievement.child).join(Child.grade).join(Grade.school).filter(User.city == city_enum)
         except ValueError:
             raise exceptions.WRONG_CITY
-    
-    # Выполняем запрос
+
     result = await db.execute(query)
     achievements = result.scalars().all()
-    
+
     return achievements
 
 @router.get("/all/{child_id}", response_model=List[schemas.AchievementResponse])

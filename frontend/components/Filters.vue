@@ -38,34 +38,25 @@ import { ref } from 'vue';
 import cities from '~/utils/cities';
 
 const filters = ref({
-  achieve_type: '' // Исправлено название параметра
+  achieve_type: ''
 });
 const emit = defineEmits(['apply']);
 
 const applyFilters = () => {
-  // Создаем копию фильтров для обработки
   const processedFilters = { ...filters.value };
-  
-  // Если child_id пустой, удаляем его из фильтров
   if (!processedFilters.child_id || processedFilters.child_id.trim() === '') {
     delete processedFilters.child_id;
   }
-  
-  // Если название пустое, удаляем его из фильтров
   if (!processedFilters.name || processedFilters.name.trim() === '') {
     delete processedFilters.name;
   }
-  
-  // Если город "Все города", удаляем его из фильтров
   if (processedFilters.city === '') {
     delete processedFilters.city;
   }
-  
-  // Если направление "Все", удаляем его из фильтров
   if (processedFilters.achieve_type === '') {
     delete processedFilters.achieve_type;
   }
-  
+
   emit('apply', processedFilters);
 };
 </script>

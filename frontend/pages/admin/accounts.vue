@@ -2,8 +2,7 @@
   <div class="flex h-screen w-screen">
     <AdminSidebar />
     <div class="p-6 w-full">
-      <h1 class="text-2xl font-semibold text-gray-800 mb-6">Управление аккаунтами</h1>
-      
+    
       <div v-if="loading" class="flex justify-center py-8">
         <div class="loader border-t-2 border-blue-500 rounded-full w-8 h-8 animate-spin"></div>
       </div>
@@ -17,7 +16,10 @@
       </div>
       
       <div v-else>
-        <!-- Отображаем разные данные в зависимости от роли -->
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6" v-if="user.role === 'school'">Управление классами</h1>
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6" v-else-if="user.role === 'mun'">Управление школами</h1>
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6" v-else>Управление муниципалитетами</h1>
+
         <div v-if="user.role === 'school'" class="mb-8">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-semibold text-gray-800">Мои классы</h2>
@@ -54,7 +56,6 @@
             <p class="text-gray-600">У вашей школы пока нет классов</p>
           </div>
           
-          <!-- Секция для отображения учеников в классе -->
           <div v-if="selectedGrade" class="mt-10">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-xl font-semibold">Ученики в {{ selectedGrade.grade }}{{ selectedGrade.parallel }}</h3>
@@ -120,7 +121,6 @@
             <p class="text-gray-600">В вашем муниципалитете пока нет школ</p>
           </div>
           
-          <!-- Секция для отображения деталей школы -->
           <div v-if="selectedSchool" class="mt-10">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-xl font-semibold">{{ selectedSchool.name }}</h3>
@@ -130,7 +130,6 @@
               </button>
             </div>
             
-            <!-- Панель действий для школы -->
             <div class="flex flex-wrap gap-2 mb-6">
               <button @click="openAddTeacherModal" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
                 Добавить учителя
@@ -142,8 +141,6 @@
                 Добавить достижение
               </button>
             </div>
-            
-            <!-- Вкладки для навигации -->
             <div class="border-b border-gray-200 mb-6">
               <nav class="-mb-px flex space-x-8">
                 <button
@@ -160,8 +157,6 @@
                 </button>
               </nav>
             </div>
-            
-            <!-- Контент вкладок -->
             <div v-if="activeTab === 'classes'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div v-for="grade in schoolClasses" :key="grade.id" class="border border-gray-200 rounded-xl p-5">
                 <div class="flex justify-between">
@@ -204,8 +199,6 @@
                 </div>
               </div>
             </div>
-            
-            <!-- Секция для отображения учеников в классе -->
             <div v-if="selectedClass" class="mt-10">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Ученики в {{ selectedClass.grade }}{{ selectedClass.parallel }}</h3>
@@ -250,9 +243,7 @@
         </div>
         
         <div v-else-if="user.role === 'owner'" class="mb-8">
-          <!-- Основной контейнер для владельца -->
           <div v-if="!selectedMunicipality">
-            <!-- Список муниципалитетов -->
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Муниципалитеты</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div v-for="municipality in municipalities" :key="municipality.city" class="border border-gray-200 rounded-xl p-5">
@@ -275,8 +266,6 @@
               <p class="text-gray-600">Нет доступных муниципалитетов</p>
             </div>
           </div>
-          
-          <!-- Секция для отображения школ в выбранном муниципалитете -->
           <div v-else>
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-xl font-semibold">Школы в {{ selectedMunicipality }}</h3>
@@ -307,8 +296,6 @@
               <p class="text-gray-600">В этом муниципалитете пока нет школ</p>
             </div>
           </div>
-          
-          <!-- Секция для отображения деталей школы -->
           <div v-if="selectedSchool" class="mt-10">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-xl font-semibold">{{ selectedSchool.name }}</h3>
@@ -317,8 +304,6 @@
                 Вернуться к списку школ
               </button>
             </div>
-            
-            <!-- Панель действий для школы -->
             <div class="flex flex-wrap gap-2 mb-6">
               <button @click="openAddTeacherModal" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
                 Добавить учителя
@@ -330,8 +315,6 @@
                 Добавить достижение
               </button>
             </div>
-            
-            <!-- Вкладки для навигации -->
             <div class="border-b border-gray-200 mb-6">
               <nav class="-mb-px flex space-x-8">
                 <button
@@ -348,8 +331,6 @@
                 </button>
               </nav>
             </div>
-            
-            <!-- Контент вкладок -->
             <div v-if="activeTab === 'classes'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div v-for="grade in schoolClasses" :key="grade.id" class="border border-gray-200 rounded-xl p-5">
                 <div class="flex justify-between">
@@ -392,8 +373,6 @@
                 </div>
               </div>
             </div>
-            
-            <!-- Секция для отображения учеников в классе -->
             <div v-if="selectedClass" class="mt-10">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Ученики в {{ selectedClass.grade }}{{ selectedClass.parallel }}</h3>
@@ -442,8 +421,6 @@
         </div>
       </div>
     </div>
-    
-    <!-- Модальное окно подтверждения удаления -->
     <Modal v-if="showDeleteModal" @close="showDeleteModal = false">
       <div class="p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Вы уверены?</h3>
@@ -458,8 +435,6 @@
         </div>
       </div>
     </Modal>
-    
-    <!-- Модальное окно добавления/редактирования класса -->
     <Modal v-if="showGradeModal" @close="closeGradeModal">
       <div class="p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">{{ gradeModalTitle }}</h3>
@@ -485,8 +460,6 @@
         </form>
       </div>
     </Modal>
-    
-    <!-- Модальное окно добавления/редактирования ученика -->
     <Modal v-if="showChildModal" @close="closeChildModal">
       <div class="p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">{{ childModalTitle }}</h3>
@@ -506,8 +479,6 @@
         </form>
       </div>
     </Modal>
-    
-    <!-- Модальное окно добавления/редактирования учителя -->
     <Modal v-if="showTeacherModal" @close="closeTeacherModal">
       <div class="p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">{{ teacherModalTitle }}</h3>
@@ -527,8 +498,6 @@
         </form>
       </div>
     </Modal>
-    
-    <!-- Модальное окно добавления достижения -->
     <Modal v-if="showAchievementModal" @close="closeAchievementModal">
       <div class="p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Добавить достижение</h3>
@@ -566,8 +535,6 @@
         </form>
       </div>
     </Modal>
-    
-    <!-- Модальное окно просмотра достижений ученика -->
     <Modal v-if="showAchievementsModal" @close="closeAchievementsModal">
       <div class="p-6 max-h-96 overflow-y-auto">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Достижения ученика</h3>
@@ -630,7 +597,6 @@ const gradeStudents = ref([]);
 const classStudents = ref([]);
 const allStudents = ref([]);
 
-// Переменные для модальных окон
 const showDeleteModal = ref(false);
 const showGradeModal = ref(false);
 const showChildModal = ref(false);
@@ -638,11 +604,9 @@ const showTeacherModal = ref(false);
 const showAchievementModal = ref(false);
 const showAchievementsModal = ref(false);
 
-// Тип удаления и ID
 const deleteType = ref('');
 const deleteId = ref(null);
 
-// Формы для модальных окон
 const gradeForm = ref({
   id: null,
   grade: 1,
@@ -673,7 +637,6 @@ const achievementForm = ref({
 
 const studentAchievements = ref([]);
 
-// Заголовки и тексты для модальных окон
 const gradeModalTitle = computed(() => {
   return gradeForm.value.id ? 'Редактировать класс' : 'Добавить класс';
 });
@@ -710,8 +673,7 @@ const buildUrl = (baseUrl, path) => {
 
 const loadUserData = async () => {
   try {
-    // Получаем информацию о текущем пользователе
-    const userData = await $fetch(buildUrl(apiUrl, '/auth/me'), {
+        const userData = await $fetch(buildUrl(apiUrl, '/auth/me'), {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
       }
@@ -720,8 +682,7 @@ const loadUserData = async () => {
     console.log('Данные пользователя:', userData);
     user.value = userData;
     
-    // Загружаем данные в зависимости от роли
-    if (user.value.role === 'school') {
+        if (user.value.role === 'school') {
       await loadSchoolGrades();
     } else if (user.value.role === 'mun') {
       await loadMunicipalitySchools();
@@ -766,8 +727,7 @@ const loadMunicipalitySchools = async () => {
     
     console.log('Данные рейтингов муниципалитетов:', data);
     
-    // Находим муниципалитет, соответствующий городу пользователя
-    const municipality = data.municipalities.find(m => m.city === user.value.city);
+        const municipality = data.municipalities.find(m => m.city === user.value.city);
     if (municipality) {
       schools.value = municipality.schools.map(school => ({
         ...school,
@@ -845,14 +805,11 @@ const showSchoolDetails = async (schoolId) => {
     console.log(`Загрузка деталей школы: ${schoolId}`);
     selectedSchool.value = schools.value.find(s => s.id === schoolId);
     
-    // Загружаем классы школы
-    await loadSchoolClasses(schoolId);
+        await loadSchoolClasses(schoolId);
     
-    // Загружаем учителей школы
-    await loadSchoolTeachers(schoolId);
+        await loadSchoolTeachers(schoolId);
     
-    // Устанавливаем активную вкладку
-    activeTab.value = 'classes';
+        activeTab.value = 'classes';
   } catch (err) {
     error.value = `Ошибка при загрузке деталей школы ${schoolId}`;
     console.error('Ошибка при загрузке деталей школы:', err);
@@ -978,8 +935,7 @@ const deleteItem = async () => {
         body: JSON.stringify({ id: deleteId.value })
       });
       
-      // Обновляем список классов
-      if (user.value.role === 'school') {
+            if (user.value.role === 'school') {
         grades.value = grades.value.filter(g => g.id !== deleteId.value);
       } else {
         schoolClasses.value = schoolClasses.value.filter(g => g.id !== deleteId.value);
@@ -994,8 +950,7 @@ const deleteItem = async () => {
         body: JSON.stringify({ id: deleteId.value })
       });
       
-      // Обновляем список учеников
-      if (selectedGrade.value) {
+            if (selectedGrade.value) {
         gradeStudents.value = gradeStudents.value.filter(c => c.id !== deleteId.value);
       } else {
         classStudents.value = classStudents.value.filter(c => c.id !== deleteId.value);
@@ -1010,8 +965,7 @@ const deleteItem = async () => {
         body: JSON.stringify({ id: deleteId.value })
       });
       
-      // Обновляем список учителей
-      schoolTeachers.value = schoolTeachers.value.filter(t => t.id !== deleteId.value);
+            schoolTeachers.value = schoolTeachers.value.filter(t => t.id !== deleteId.value);
     } else if (deleteType.value === 'achievement') {
       await $fetch(buildUrl(apiUrl, '/achievement/delete'), {
         method: 'DELETE',
@@ -1022,8 +976,7 @@ const deleteItem = async () => {
         body: JSON.stringify({ id: deleteId.value })
       });
       
-      // Обновляем список достижений
-      studentAchievements.value = studentAchievements.value.filter(a => a.id !== deleteId.value);
+            studentAchievements.value = studentAchievements.value.filter(a => a.id !== deleteId.value);
     }
     
     showDeleteModal.value = false;
@@ -1073,15 +1026,13 @@ const saveGrade = async () => {
     });
     
     if (gradeForm.value.id) {
-      // Редактирование существующего класса
-      if (user.value.role === 'school') {
+            if (user.value.role === 'school') {
         grades.value = grades.value.map(g => g.id === response.id ? response : g);
       } else {
         schoolClasses.value = schoolClasses.value.map(g => g.id === response.id ? response : g);
       }
     } else {
-      // Добавление нового класса
-      if (user.value.role === 'school') {
+            if (user.value.role === 'school') {
         grades.value.push(response);
       } else {
         schoolClasses.value.push(response);
@@ -1132,15 +1083,13 @@ const saveChild = async () => {
     });
     
     if (childForm.value.id) {
-      // Редактирование существующего ученика
-      if (selectedGrade.value) {
+            if (selectedGrade.value) {
         gradeStudents.value = gradeStudents.value.map(c => c.id === response.id ? response : c);
       } else {
         classStudents.value = classStudents.value.map(c => c.id === response.id ? response : c);
       }
     } else {
-      // Добавление нового ученика
-      if (selectedGrade.value) {
+            if (selectedGrade.value) {
         gradeStudents.value.push(response);
       } else {
         classStudents.value.push(response);
@@ -1191,11 +1140,9 @@ const saveTeacher = async () => {
     });
     
     if (teacherForm.value.id) {
-      // Редактирование существующего учителя
-      schoolTeachers.value = schoolTeachers.value.map(t => t.id === response.id ? response : t);
+            schoolTeachers.value = schoolTeachers.value.map(t => t.id === response.id ? response : t);
     } else {
-      // Добавление нового учителя
-      schoolTeachers.value.push(response);
+            schoolTeachers.value.push(response);
     }
     
     closeTeacherModal();
@@ -1235,8 +1182,7 @@ const saveAchievement = async () => {
       body: JSON.stringify(achievementForm.value)
     });
     
-    // Добавляем достижение в список (если нужно)
-    closeAchievementModal();
+        closeAchievementModal();
   } catch (err) {
     error.value = 'Ошибка при добавлении достижения';
     console.error('Ошибка при добавлении достижения:', err);
@@ -1247,8 +1193,7 @@ const showStudentAchievements = async (childId) => {
   try {
     console.log(`Загрузка достижений для ученика: ${childId}`);
     
-    // ИСПРАВЛЕНИЕ: Правильный URL согласно OpenAPI документации
-    const response = await $fetch(buildUrl(apiUrl, `/achievement/all/${childId}`), {
+        const response = await $fetch(buildUrl(apiUrl, `/achievement/all/${childId}`), {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
       }
@@ -1256,16 +1201,12 @@ const showStudentAchievements = async (childId) => {
     
     console.log('Достижения ученика:', response);
     
-    // Проверяем структуру ответа
-    if (Array.isArray(response)) {
-      // Если сервер возвращает массив достижений напрямую
-      studentAchievements.value = response;
+        if (Array.isArray(response)) {
+            studentAchievements.value = response;
     } else if (response.achievements && Array.isArray(response.achievements)) {
-      // Если сервер возвращает объект с полем achievements
-      studentAchievements.value = response.achievements;
+            studentAchievements.value = response.achievements;
     } else {
-      // Если структура ответа неожиданная
-      studentAchievements.value = [];
+            studentAchievements.value = [];
       console.error('Неожиданная структура ответа:', response);
       error.value = 'Получены некорректные данные от сервера';
     }
@@ -1292,8 +1233,7 @@ const confirmSchool = async (id) => {
       }
     });
     
-    // Обновляем список школ
-    if (user.value.role === 'mun') {
+        if (user.value.role === 'mun') {
       schools.value = schools.value.filter(s => s.id !== id);
     } else if (user.value.role === 'owner' && selectedMunicipality.value) {
       municipalitySchools.value = municipalitySchools.value.filter(s => s.id !== id);
@@ -1314,8 +1254,7 @@ const rejectSchool = async (id) => {
       }
     });
     
-    // Обновляем список школ
-    if (user.value.role === 'mun') {
+        if (user.value.role === 'mun') {
       schools.value = schools.value.filter(s => s.id !== id);
     } else if (user.value.role === 'owner' && selectedMunicipality.value) {
       municipalitySchools.value = municipalitySchools.value.filter(s => s.id !== id);

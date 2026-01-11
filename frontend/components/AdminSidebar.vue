@@ -32,7 +32,6 @@
       </ul>
     </nav>
     
-    <!-- Кнопка "Вернуться в сайт" -->
     <div class="p-4 border-t border-primary-700">
       <NuxtLink
         to="/"

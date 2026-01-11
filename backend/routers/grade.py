@@ -17,9 +17,8 @@ async def all_grades(
 ):
     if not data.id or user.role.level <= 1:
         data.id = user.id
-    grades = await crud.get_obj_by(
-        db, Grade, schemas.GradeResponse, need_all=True, 
-        load_relationships=[Grade.children], school_id=data.id
+    grades = await crud.get_grades_with_ratio(
+        db, data.id
     )
     return schemas.GradesResponse.model_validate(schemas.GradesResponse(grades=grades))
 

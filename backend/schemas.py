@@ -64,7 +64,7 @@ class GradeResponse(GradeBase):
     id: int
     school_id: int
     children: list["ChildResponse"] = Field(default=[])
-    
+    ratio: int
 
     class Config:
         from_attributes = True

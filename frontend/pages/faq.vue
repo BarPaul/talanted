@@ -47,7 +47,6 @@
         </div>
       </div>
 
-      <!-- Таблица уровней -->
       <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h4 class="text-sm font-medium text-gray-900">Уровни достижений</h4>
@@ -70,7 +69,6 @@
         </div>
       </div>
 
-      <!-- Таблица форматов -->
       <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h4 class="text-sm font-medium text-gray-900">Форматы достижений</h4>
@@ -94,9 +92,7 @@
       </div>
     </div>
 
-    <!-- Дополнительный блок таблиц -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-      <!-- Таблица командности -->
       <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h4 class="text-sm font-medium text-gray-900">Командная работа</h4>
@@ -119,7 +115,6 @@
         </div>
       </div>
 
-      <!-- Таблица мест -->
       <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h4 class="text-sm font-medium text-gray-900">Места</h4>
@@ -169,14 +164,12 @@
 <script setup>
 useHead({ title: 'ЧаВО' });
 
-// Типы достижений
 const typeFactors = [
   { type: 'Наука', value: 1.4 },
   { type: 'Искусство', value: 1.4 },
   { type: 'Спорт', value: 1.4 }
 ];
 
-// Уровни достижений
 const levelFactors = [
   { level: 'Городской', value: 1.25 },
   { level: 'Межгородской', value: 1.5 },
@@ -185,19 +178,16 @@ const levelFactors = [
   { level: 'Всероссийский', value: 4.5 }
 ];
 
-// Форматы достижений
 const formatFactors = [
   { format: 'Очное', value: 1.5 },
   { format: 'Дистанционное', value: 0.5 }
 ];
 
-// Командность
 const teamFactors = [
   { team: 'Одиночное', value: 1.75 },
   { team: 'Командное', value: 1.25 }
 ];
 
-// Места
 const placeFactors = [
   { place: 'Гран-при', value: 1.3 },
   { place: '1-е место', value: 1.25 },

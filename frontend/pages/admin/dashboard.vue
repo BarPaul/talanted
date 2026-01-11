@@ -20,18 +20,16 @@
       </div>
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- График достижений по типам -->
-        <div class="bg-white rounded-xl shadow-sm p-6 h-[300px]"> <!-- Добавлена фиксированная высота -->
+        <div class="bg-white rounded-xl shadow-sm p-6 h-[300px]">
           <h2 class="text-lg font-medium text-gray-800 mb-4">Достижения по направлениям</h2>
-          <div class="w-full h-full"> <!-- Контейнер для canvas -->
+          <div class="w-full h-full">
             <canvas id="achievementsByTypeChart" class="w-full h-full"></canvas>
           </div>
         </div>
         
-        <!-- График количества объектов -->
-        <div class="bg-white rounded-xl shadow-sm p-6 h-[300px]"> <!-- Добавлена фиксированная высота -->
+        <div class="bg-white rounded-xl shadow-sm p-6 h-[300px]">
           <h2 class="text-lg font-medium text-gray-800 mb-4">Количество объектов</h2>
-          <div class="w-full h-full"> <!-- Контейнер для canvas -->
+          <div class="w-full h-full">
             <canvas id="objectsCountChart" class="w-full h-full"></canvas>
           </div>
         </div>
@@ -61,7 +59,6 @@ const buildUrl = (baseUrl, path) => {
   return `${cleanBaseUrl}${cleanPath}`;
 };
 
-// Константные данные для графиков
 const achievementsData = {
   labels: ['Неделя 1', 'Неделя 2', 'Неделя 3', 'Неделя 4'],
   datasets: [
@@ -122,7 +119,6 @@ const objectsCountData = {
   ]
 };
 
-// Настройки для обоих графиков
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -150,10 +146,8 @@ const chartOptions = {
   }
 };
 
-// Функция для динамической загрузки Chart.js
 const loadChartJs = () => {
   return new Promise((resolve, reject) => {
-    // Проверяем, уже ли загружен Chart.js
     if (typeof window.Chart !== 'undefined') {
       resolve();
       return;
@@ -170,7 +164,6 @@ const loadChartJs = () => {
   });
 };
 
-// ФУНКЦИЯ ДЛЯ ПРОВЕРКИ ГОТОВНОСТИ Chart.js (ОТСУТСТВОВАЛА В ВАШЕМ КОДЕ)
 const waitForChartJs = (maxAttempts = 30, interval = 100) => {
   return new Promise((resolve, reject) => {
     let attempts = 0;
@@ -191,10 +184,8 @@ const waitForChartJs = (maxAttempts = 30, interval = 100) => {
 };
 
 const initCharts = () => {
-  // График достижений по типам
   const achievementsCtx = document.getElementById('achievementsByTypeChart');
   if (achievementsCtx && typeof window.Chart !== 'undefined') {
-    // Уничтожаем предыдущий экземпляр, если он существует
     if (chartInstances.value.achievements) {
       chartInstances.value.achievements.destroy();
     }
@@ -206,10 +197,8 @@ const initCharts = () => {
     });
   }
   
-  // График количества объектов
   const objectsCtx = document.getElementById('objectsCountChart');
   if (objectsCtx && typeof window.Chart !== 'undefined') {
-    // Уничтожаем предыдущий экземпляр, если он существует
     if (chartInstances.value.objects) {
       chartInstances.value.objects.destroy();
     }
@@ -224,16 +213,9 @@ const initCharts = () => {
 
 onMounted(async () => {
   try {
-    // Загружаем статистику
     stats.value = await $fetch(buildUrl(apiUrl, '/stats/counts'));
-    
-    // Загружаем Chart.js
     await loadChartJs();
-    
-    // Ждем, пока Chart.js станет доступен
     await waitForChartJs();
-    
-    // Инициализируем графики
     initCharts();
   } catch (err) {
     chartError.value = `Ошибка при загрузке графиков: ${err.message}`;
@@ -244,7 +226,6 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  // Очищаем графики при уничтожении компонента
   Object.values(chartInstances.value).forEach(chart => {
     if (chart && typeof chart.destroy === 'function') {
       chart.destroy();

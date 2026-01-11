@@ -35,17 +35,6 @@ const achievements = ref([]);
 const filters = ref({});
 const loading = ref(false);
 const error = ref(null);
-const apiUrl = useRuntimeConfig().public.apiUrl;
-
-const buildUrl = (baseUrl, path) => {
-  if (!baseUrl) {
-    throw new Error('API URL не настроен. Проверьте NUXT_PUBLIC_API_URL в .env файле');
-  }
-  
-  const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${cleanBaseUrl}${cleanPath}`;
-};
 
 const loadAchievements = async (newFilters) => {
   loading.value = true;
@@ -59,10 +48,8 @@ const loadAchievements = async (newFilters) => {
       throw new Error('API URL не настроен. Проверьте NUXT_PUBLIC_API_URL в .env файле');
     }
     
-    // Создаем объект параметров, включая ТОЛЬКО непустые значения
     const params = {};
     
-    // Добавляем только непустые и определенные фильтры
     if (filters.value.child_id !== null && filters.value.child_id !== undefined && filters.value.child_id !== '') {
       params.child_id = filters.value.child_id;
     }
@@ -79,7 +66,6 @@ const loadAchievements = async (newFilters) => {
       params.achieve_type = filters.value.achieve_type;
     }
     
-    // Используем правильный путь к API
     const url = `${apiUrl}achievement/all`;
     
     const data = await $fetch(url, { 

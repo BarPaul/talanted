@@ -12,7 +12,6 @@
     </div>
     
     <div v-if="!loading && !error" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <!-- Топ-20 муниципалитетов -->
       <div class="bg-white rounded-xl shadow-sm p-6">
         <h3 class="text-lg font-medium mb-4">Топ-20 муниципалитетов</h3>
         <DataTable 
@@ -26,7 +25,6 @@
         />
       </div>
       
-      <!-- Топ-50 школ -->
       <div class="bg-white rounded-xl shadow-sm p-6">
         <h3 class="text-lg font-medium mb-4">Топ-50 школ</h3>
         <div class="lg:col-span-2 mb-4">
@@ -78,20 +76,17 @@ const buildUrl = (baseUrl, path) => {
   return `${cleanBaseUrl}${cleanPath}`;
 };
 
-// Форматируем данные для таблицы муниципалитетов
 const formattedMunicipalities = computed(() => {
   return municipalitiesData.value.map(m => ({
-    place: Math.floor(m.place), // Убедимся, что место целое число
+    place: Math.floor(m.place),
     city: m.city,
     total_ratio: m.total_ratio.toFixed(2)
-  })).slice(0, 20); // Ограничиваем до ТОП-20
+  })).slice(0, 20);
 });
 
-// Получаем топ-50 школ из всех муниципалитетов
 const allSchools = computed(() => {
   let schools = [];
   
-  // Собираем все школы из всех муниципалитетов
   municipalitiesData.value.forEach(m => {
     schools = [...schools, ...m.schools.map(s => ({
       ...s,
@@ -100,22 +95,18 @@ const allSchools = computed(() => {
     }))];
   });
   
-  // Сортируем по баллам
   schools.sort((a, b) => b.total_ratio - a.total_ratio);
   
   return schools;
 });
 
-// Фильтруем школы по выбранному городу
 const filteredTop50Schools = computed(() => {
   let schools = allSchools.value;
   
-  // Фильтруем по городу, если выбран конкретный город
   if (selectedCity.value !== 'all') {
     schools = schools.filter(school => school.city === selectedCity.value);
   }
   
-  // Добавляем места
   return schools.slice(0, 50).map((school, index) => ({
     ...school,
     place: index + 1
@@ -124,10 +115,8 @@ const filteredTop50Schools = computed(() => {
 
 onMounted(async () => {
   try {
-    // Получаем данные рейтингов
     const response = await $fetch(buildUrl(apiUrl, '/stats/ratings/municipalities'));
     
-    // Сохраняем данные муниципалитетов
     municipalitiesData.value = response.municipalities;
   } catch (err) {
     error.value = 'Не удалось загрузить рейтинги. Попробуйте позже.';

@@ -36,7 +36,7 @@ services:
       - backend
     environment:
       - FRONT_PORT=3000
-      - API_URL=http://localhost:${API_PORT}
+      - API_URL=http://localhost:${API_PORT}/
     ports:
       - "${FRONT_PORT}:${FRONT_PORT}"
     command: npm run dev

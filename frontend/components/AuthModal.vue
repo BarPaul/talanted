@@ -271,14 +271,12 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useNuxtApp, navigateTo, useRuntimeConfig, useState } from '#app';
 import cities from '~/utils/cities';
 
-// Состояние аутентификации
 const auth = useState('auth', () => ({
   token: null,
   user: null,
   isAuthenticated: false
 }));
 
-// Вычисляемое свойство для проверки аутентификации
 const isAuthenticated = computed(() => auth.value.isAuthenticated);
 
 const isOpen = ref(false);
@@ -337,41 +335,34 @@ const handleLogin = async () => {
       }
     });
     
-    // Проверяем, что ответ содержит access_token
-    if (!response.access_token) {
+        if (!response.access_token) {
       throw new Error('Неверный ответ от сервера');
     }
     
-    // Сохраняем токен аутентификации
-    auth.value = {
+        auth.value = {
       token: response.access_token,
       user: null,
       isAuthenticated: true
     };
     
-    // Сохраняем токен в localStorage
-    if (process.client) {
+        if (process.client) {
       localStorage.setItem('auth_token', response.access_token);
       localStorage.setItem('auth_user', JSON.stringify(null));
     }
     
-    // Закрываем модальное окно
-    closeModal();
+        closeModal();
     
-    // Перенаправляем на личный кабинет
-    navigateTo('/admin/dashboard');
+        navigateTo('/admin/dashboard');
   } catch (err) {
     let errorMessage = 'Ошибка входа: ';
     
     try {
-      // Пытаемся получить detail из ошибки
-      if (err.data && err.data.detail) {
+            if (err.data && err.data.detail) {
         errorMessage += err.data.detail;
       } else if (err.response && err.response._data && err.response._data.detail) {
         errorMessage += err.response._data.detail;
       } else if (typeof err === 'string' && err.includes('detail')) {
-        // Попробуем распарсить как JSON
-        try {
+                try {
           const errorObj = JSON.parse(err);
           errorMessage += errorObj.detail;
         } catch (e) {
@@ -418,43 +409,36 @@ const handleRegister = async () => {
       }
     });
 
-    // Проверяем, что ответ содержит access_token
-    if (!response.access_token) {
+        if (!response.access_token) {
       throw new Error('Неверный ответ от сервера');
     }
     
-    // Сохраняем токен аутентификации
-    auth.value = {
+        auth.value = {
       token: response.access_token,
       user: null,
       isAuthenticated: true
     };
     
-    // Сохраняем токен в localStorage
-    if (process.client) {
+        if (process.client) {
       localStorage.setItem('auth_token', response.access_token);
       localStorage.setItem('auth_user', JSON.stringify(null));
     }
     
     alert('Регистрация прошла успешно!');
     
-    // Закрываем модальное окно
-    closeModal();
+        closeModal();
     
-    // Перенаправляем на личный кабинет
-    navigateTo('/admin/dashboard');
+        navigateTo('/admin/dashboard');
   } catch (err) {
     let errorMessage = 'Ошибка регистрации: ';
     
     try {
-      // Пытаемся получить detail из ошибки
-      if (err.data && err.data.detail) {
+            if (err.data && err.data.detail) {
         errorMessage += err.data.detail;
       } else if (err.response && err.response._data && err.response._data.detail) {
         errorMessage += err.response._data.detail;
       } else if (typeof err === 'string' && err.includes('detail')) {
-        // Попробуем распарсить как JSON
-        try {
+                try {
           const errorObj = JSON.parse(err);
           errorMessage += errorObj.detail;
         } catch (e) {
@@ -490,8 +474,7 @@ const handleForgotPassword = async () => {
     let errorMessage = 'Ошибка изменения пароля: ';
     
     try {
-      // Пытаемся получить detail из ошибки
-      if (err.data && err.data.detail) {
+            if (err.data && err.data.detail) {
         errorMessage += err.data.detail;
       } else if (err.response && err.response._data && err.response._data.detail) {
         errorMessage += err.response._data.detail;
@@ -541,7 +524,6 @@ const handleOutsideClick = (e) => {
   }
 };
 
-// Проверяем, есть ли токен в localStorage при загрузке компонента
 onMounted(() => {
   if (process.client) {
     const token = localStorage.getItem('auth_token');

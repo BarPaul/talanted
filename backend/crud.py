@@ -10,6 +10,7 @@ from config import ALLOWED_EXTENSIONS
 from uuid import uuid4
 from fastapi import UploadFile
 from os import path, makedirs, remove
+from schemas import GradeResponse
 import exceptions
 
 def validate_date(date_str: str):
@@ -36,6 +37,37 @@ async def save_achievement_file(file: UploadFile) -> str:
     with open(save_path, "wb") as buffer:
         buffer.write(content)
     return save_path
+
+async def get_grades_with_ratio(
+    db: AsyncSession,
+    school_id: int
+) -> list[GradeResponse]:
+    query = (
+        select(Grade)
+        .where(Grade.school_id == school_id)
+        .options(
+            selectinload(Grade.children).selectinload(Child.achievements)
+        )
+    )
+    result = await db.execute(query)
+    grades = result.scalars().all()
+
+    responses = []
+    for grade in grades:
+        ratio = sum(
+            sum(ach.ratio for ach in child.achievements)
+            for child in grade.children
+        )
+        responses.append(
+            GradeResponse(
+                id=grade.id,
+                grade=grade.grade,
+                parallel=grade.parallel,
+                school_id=grade.school_id,
+                ratio=ratio
+            )
+        )
+    return responses
 
 async def get_obj_by(db: AsyncSession, Class, Response=None, need_all=False, load_relationships: list = None, **kwargs):
     kwargs = dict(filter(lambda item: item[-1] is not None, kwargs.items()))
